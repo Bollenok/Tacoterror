@@ -7,11 +7,10 @@ service ChitChat {
 }
 
 message ClientMessage {
-  oneof kind {
-    Join join = 1;
-    Publish publish = 2;
-    Leave leave = 3;
-  }
+}
+
+message ServerMessage {
+  
 }
 
 // will still receive it if empty
