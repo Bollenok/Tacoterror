@@ -1,0 +1,18 @@
+syntax = "proto3";
+option go_package = "chitchat/grpc/proto";
+
+service ChitChat {
+  // one stream per client connection
+  rpc Chat(stream ClientMessage) returns (stream ServerMessage);
+}
+
+message ClientMessage {
+  oneof kind {
+    Join join = 1;
+    Publish publish = 2;
+    Leave leave = 3;
+  }
+}
+
+// will still receive it if empty
+message Empty {}
