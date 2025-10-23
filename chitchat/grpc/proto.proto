@@ -2,16 +2,57 @@ syntax = "proto3";
 option go_package = "chitchat/grpc/proto";
 
 service ChitChat {
-  // one stream per client connection
+  // one stream per client
   rpc Chat(stream ClientMessage) returns (stream ServerMessage);
 }
 
 message ClientMessage {
+  oneof kind{
+    Join join = 1;
+    WriteMessage message = 2;
+    Leave leave = 3;
+  }
 }
 
 message ServerMessage {
-  
+  oneof kind{
+    Broadcast broadcast = 1;
+    Ack ack = 2;
+    Error error = 3;
+    
+  }
 }
 
-// will still receive it if empty
-message Empty {}
+message Join{
+  string name = 1;
+}
+
+message WriteMessage{
+  string text = 1; //Valid message = UTF-8, Max 128 characters
+  int64 logical_time = 2;
+}
+
+message Leave{
+  string name = 1;
+}
+
+enum BroadCastType{
+  broadcast_message = 0;
+  broadcast_join = 1;
+  broadcast_leave = 2;
+}
+
+message Broadcast{
+  BroadCastType type = 1;
+  string from = 2; // sender
+  string messagetext = 3; // message
+  int64 logical_time = 4;
+}
+
+message Error{
+  string errormsg = 1;
+}
+
+message Ack{
+  string info = 1;
+}
