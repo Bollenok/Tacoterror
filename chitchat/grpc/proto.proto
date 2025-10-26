@@ -1,58 +1,67 @@
 syntax = "proto3";
-option go_package = "chitchat/grpc/proto";
+
+package chitchat.v1;
+
+option go_package = "github.com/yourorg/tacoterror/chitchat/grpc/proto;proto";
+option java_package = "com.yourorg.chitchat.grpc";
+option java_outer_classname = "ChitChatProto";
+option csharp_namespace = "Tacoterror.ChitChat.Grpc";
 
 service ChitChat {
-  // one stream per client
+  // Bi-directional stream:
+  // - Client sends Join / ChatMessage / Leave messages.
+  // - Server streams Broadcast messages to clients and may send Ack/Error directed to the sender.
   rpc Chat(stream ClientMessage) returns (stream ServerMessage);
 }
 
 message ClientMessage {
-  oneof kind{
+  oneof kind {
     Join join = 1;
-    WriteMessage message = 2;
+    ChatMessage chat = 2;
     Leave leave = 3;
   }
 }
 
 message ServerMessage {
-  oneof kind{
+  oneof kind {
     Broadcast broadcast = 1;
     Ack ack = 2;
     Error error = 3;
-    
   }
 }
 
-message Join{
+message Join {
   string name = 1;
 }
 
-message WriteMessage{
-  string text = 1; //Valid message = UTF-8, Max 128 characters
-  int64 logical_time = 2;
+message ChatMessage {
+  // UTF-8 text, max 128 characters (enforce/validate on server or with protoc-gen-validate)
+  string text = 1;
+  int64 logical_time = 2; // Lamport/sequence time if used by protocol
 }
 
-message Leave{
+message Leave {
   string name = 1;
 }
 
-enum BroadCastType{
-  broadcast_message = 0;
-  broadcast_join = 1;
-  broadcast_leave = 2;
+enum BroadcastType {
+  BROADCAST_MESSAGE = 0;
+  BROADCAST_JOIN = 1;
+  BROADCAST_LEAVE = 2;
 }
 
-message Broadcast{
-  BroadCastType type = 1;
-  string from = 2; // sender
-  string messagetext = 3; // message
+message Broadcast {
+  BroadcastType type = 1;
+  string sender = 2;
+  string text = 3;
   int64 logical_time = 4;
 }
 
-message Error{
-  string errormsg = 1;
+message Error {
+  int32 code = 1;       // numeric error code (consider google.rpc.Status for richer errors)
+  string message = 2;   // human-readable error message
 }
 
-message Ack{
-  string info = 1;
+message Ack {
+  string info = 1; // optional info (e.g. "joined", "ok")
 }
