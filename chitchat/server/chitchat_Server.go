@@ -5,10 +5,9 @@ import (
 	"io"
 	"net"
 	"sync"
+	proto "tacoterror/chitchat/grpc"
 
 	"google.golang.org/grpc"
-
-	proto "github.com/Cadalar/chitchat/grpc/proto"
 )
 
 // LamportClock holds the state of a Lamport clock.
