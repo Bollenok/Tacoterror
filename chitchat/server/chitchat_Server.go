@@ -62,56 +62,68 @@ func (s *server) Chat(stream proto.ChitChat_ChatServer) error {
 
 		in, err := stream.Recv()
 		if err == io.EOF {
+			fmt.Println("Client disconnected (EOF)")
 			return nil
 		}
 		if err != nil {
+			fmt.Printf("Error receiving message: %v\n", err)
 			return err
 		}
 
 		switch kind := in.GetKind().(type) {
 		case *proto.ClientMessage_Join:
-			// acknowledge join
 			s.clock.Increment()
+			name := kind.Join.GetName()
+			fmt.Printf("[%d] Client joined: %s\n", s.clock.GetTime(), name)
+
 			ack := &proto.ServerMessage{
 				Kind: &proto.ServerMessage_Ack{
-					Ack: &proto.Ack{Info: "joined"},
+					Ack: &proto.Ack{Info: fmt.Sprintf("%s joined", name)},
 				},
 			}
 			if err := stream.Send(ack); err != nil {
+				fmt.Printf("Failed to send ack: %v\n", err)
 				return err
 			}
+
 		case *proto.ClientMessage_Chat:
 			chat := kind.Chat
-			// update lamport with received timestamp then increment for receive event
 			s.clock.CompareAndUpdate(chat.LogicalTime)
-			// build broadcast (here sent only back on same stream)
+			fmt.Printf("💬 [%d] Chat from client: \"%s\"\n", s.clock.GetTime(), chat.Text)
+
 			b := &proto.ServerMessage{
 				Kind: &proto.ServerMessage_Broadcast{
 					Broadcast: &proto.Broadcast{
 						Type:        proto.BroadcastType_BROADCAST_MESSAGE,
-						Sender:      "unknown", // fill from join state if you track it
+						Sender:      "unknown",
 						Text:        chat.Text,
 						LogicalTime: s.clock.GetTime(),
 					},
 				},
 			}
 			if err := stream.Send(b); err != nil {
+				fmt.Printf("Failed to send broadcast: %v\n", err)
 				return err
 			}
+
 		case *proto.ClientMessage_Leave:
-			// acknowledge leave
 			s.clock.Increment()
+			name := kind.Leave.GetName()
+			fmt.Printf("[%d] Client left: %s\n", s.clock.GetTime(), name)
+
 			ack := &proto.ServerMessage{
 				Kind: &proto.ServerMessage_Ack{
-					Ack: &proto.Ack{Info: "left"},
+					Ack: &proto.Ack{Info: fmt.Sprintf("%s left", name)},
 				},
 			}
 			if err := stream.Send(ack); err != nil {
+				fmt.Printf("Failed to send ack: %v\n", err)
 				return err
 			}
+
 		default:
-			// unknown oneof
 			s.clock.Increment()
+			fmt.Printf("[%d] Unknown message type\n", s.clock.GetTime())
 			_ = stream.Send(&proto.ServerMessage{
 				Kind: &proto.ServerMessage_Error{
 					Error: &proto.Error{Code: 400, Message: "unknown message"},
