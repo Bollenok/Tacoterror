@@ -2,10 +2,7 @@ syntax = "proto3";
 
 package chitchat.v1;
 
-option go_package = "github.com/yourorg/tacoterror/chitchat/grpc/proto;proto";
-option java_package = "com.yourorg.chitchat.grpc";
-option java_outer_classname = "ChitChatProto";
-option csharp_namespace = "Tacoterror.ChitChat.Grpc";
+option go_package = "tacoterror/chitchat/grpc/proto;proto";
 
 service ChitChat {
   // Bi-directional stream:
@@ -32,16 +29,19 @@ message ServerMessage {
 
 message Join {
   string name = 1;
+  int64 logical_time = 2;
 }
 
 message ChatMessage {
   // UTF-8 text, max 128 characters (enforce/validate on server or with protoc-gen-validate)
   string text = 1;
-  int64 logical_time = 2; // Lamport/sequence time if used by protocol
+  string sender = 2;
+  int64 logical_time = 3; // Lamport/sequence time if used by protocol
 }
 
 message Leave {
   string name = 1;
+  int64 logical_time = 2;
 }
 
 enum BroadcastType {
