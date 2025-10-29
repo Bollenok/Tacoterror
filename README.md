@@ -14,13 +14,13 @@ and make sure that `$GOPATH/bin` is in your system PATH.
 1. Open the terminal in the project root
 2. Navigate to `cd chitchat/server` and run:
 
-`go run chitchat_server.go`
+`go run chitchat_Server.go`
 
 # Running clients
 1. Open a new terminal in the project root for each client
 2. Navigate to `cd chitchat/client` and run:
 
-`go run chitchat_client.go`
+`go run chitchat_Client.go`
 
 4. Enter a username
 5. To shut a client down, press Ctrl-c
