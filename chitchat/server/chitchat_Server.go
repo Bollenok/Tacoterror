@@ -7,7 +7,7 @@ import (
 	"net"
 	"sync"
 
-	proto "tacoterror/chitchat/grpc"
+	proto "tacoterror/grpc"
 
 	"google.golang.org/grpc"
 )

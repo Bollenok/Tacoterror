@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	proto "tacoterror/chitchat/grpc"
+	proto "tacoterror/grpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -69,7 +69,7 @@ func main() {
 	}
 
 	// Create per-user log file
-	logDir := "chitchat/client/client_logs"
+	logDir := "./client_logs"
 	_ = os.MkdirAll(logDir, 0o755)
 	logPath := filepath.Join(logDir, username+".log")
 	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
@@ -78,18 +78,6 @@ func main() {
 	}
 	defer f.Close()
 	logger := log.New(f, "", log.LstdFlags)
-
-	/*logDir := "chitchat/client/client_logs"
-	if err := os.MkdirAll(logDir, os.ModePerm); err != nil { // make sure it exists
-		log.Fatalf("Failed to create log directory: %v", err)
-	}
-	logFileName := fmt.Sprintf("%s/client_%s.log", logDir, username)
-	logFile, err := os.Create(logFileName)
-	if err != nil {
-		log.Fatalf("Failed to create log file: %v", err)
-	}
-	defer logFile.Close()
-	logger := log.New(logFile, "", log.LstdFlags)*/
 
 	// Establish gRPC connection
 	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
